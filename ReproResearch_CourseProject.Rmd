@@ -15,7 +15,7 @@ AMD[, date := fastPOSIXct(date)]                #convert to date
 ```
 
 
-
+# der median ist doch falsch
 ### What is mean total number of steps taken per day?
 ```{r echo=TRUE}
 AMDwithoutNA <- AMD[, .(steps=sum(steps), mean=mean(steps), median=median(steps)), by="date"]     #aggregate by day and Mean and median number of steps taken each day
@@ -24,6 +24,7 @@ library(ggplot2)
 ggplot(AMDwithoutNA, aes(x=date, y=steps)) +  geom_col()            #Histogram of the total number of steps taken each day
 AMDwithoutNA
 ```
+
 
 
 ### What is the average daily activity pattern?
