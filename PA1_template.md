@@ -100,8 +100,8 @@ Imputing increase the mean and median value!
 
 ``` r
 activity_imputed[, weekday := as.factor(ifelse(weekdays(fastPOSIXct(date)) %in% c("Samstag", "Sonntag"), "weekend", "weekday"))]
-activity_imputed <- activity_imputed[, .(mean = mean(steps, na.rm = T)), by = c("weekday","interval")]
-ggplot(activity_imputed, aes(x=interval, y=mean)) +  
+activity_imputed_week <- activity_imputed[, .(mean = mean(steps, na.rm = T)), by = c("weekday","interval")]
+ggplot(activity_imputed_week, aes(x=interval, y=mean)) +  
         geom_line() +           #Time series plot of the average number of steps taken
         facet_wrap(~weekday, ncol = 1)
 ```
