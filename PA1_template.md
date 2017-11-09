@@ -73,23 +73,23 @@ steps[which.max(mean)]                                    #The 5-minute interval
 ### Imputing missing values
 
 ``` r
-activity[is.na(steps), .N]                                                                             # Total Number of rows with missing values
+activity[is.na(steps), .N]                                                              # Total Number of rows with missing values
 ```
 
     ## [1] 2304
 
 ``` r
 activity_imputed <- activity[, .(date, steps, interval, MeanSteps = mean(steps, na.rm = T)), by=.(week = data.table::week(date))]    # calculate mean of week
-activity_imputed <- activity_imputed[is.na(steps), .(date, steps = MeanSteps, interval), by="week"]        # replace missing values with mean 
-activity_imputed <- activity_imputed[, .(steps = sum(steps, na.rm = T)), by="date"]     #aggregate by day
-activity_imputed[, .(mean=mean(steps, na.rm = T), median=median(steps, na.rm = T))]     #Calculate and report the mean and median total number of steps taken per day
+activity_imputed[is.na(steps), steps := MeanSteps][, MeanSteps := NULL]                 # replace missing values with mean 
+activity_imputed_agg <- activity_imputed[, .(steps = sum(steps, na.rm = T)), by="date"]     # aggregate by day
+activity_imputed_agg[, .(mean=mean(steps, na.rm = T), median=median(steps, na.rm = T))]     # Calculate and report the mean and median total number of steps taken per day
 ```
 
     ##        mean median
-    ## 1: 9559.808 9155.6
+    ## 1: 10607.97  10571
 
 ``` r
-ggplot(data=activity_imputed, aes(steps)) + geom_histogram(bins=10)                             #Histogram of the total number of steps taken each day
+ggplot(data=activity_imputed_agg, aes(steps)) + geom_histogram(bins=10)                     # Histogram of the total number of steps taken each day
 ```
 
 ![](figure/unnamed-chunk-5-1.png)
@@ -97,3 +97,13 @@ ggplot(data=activity_imputed, aes(steps)) + geom_histogram(bins=10)             
 Imputing increase the mean and median value!
 
 ### Are there differences in activity patterns between weekdays and weekends?
+
+``` r
+activity_imputed[, weekday := as.factor(ifelse(weekdays(fastPOSIXct(date)) %in% c("Samstag", "Sonntag"), "weekend", "weekday"))]
+activity_imputed <- activity_imputed[, .(mean = mean(steps, na.rm = T)), by = c("weekday","interval")]
+ggplot(activity_imputed, aes(x=interval, y=mean)) +  
+        geom_line() +           #Time series plot of the average number of steps taken
+        facet_wrap(~weekday, ncol = 1)
+```
+
+![](figure/unnamed-chunk-6-1.png)
