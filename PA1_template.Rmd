@@ -5,47 +5,72 @@ date: "21 September 2017"
 output: html_document
 ---
 
-### Loading and preprocessing the datay
+### Libraries
 ```{r echo=TRUE}
-library(data.table)
 library(fasttime)
+library(knitr)
+library(ggplot2)
+library(data.table)
 setwd("C:\\Users\\Sven\\Desktop\\Coursera\\RepResearch\\RepData_PeerAssessment1\\")
-AMD <- fread("activity.csv", na.strings="NA", colClasses = c("steps" = "double"))   #read data
-AMD[, date := fastPOSIXct(date)]                #convert to date
+opts_chunk$set(dev="png", fig.path="figure/")
 ```
 
 
-# der median ist doch falsch
+
+
+
+### Loading and preprocessing the data
+```{r echo=TRUE}
+activity <- fread("activity.csv", na.strings="NA", colClasses = c("steps" = "double"))   #read data
+activity[, date := fastPOSIXct(date)]                                                    #convert to date
+```
+
+
+
+
+
+
+
 ### What is mean total number of steps taken per day?
 ```{r echo=TRUE}
-AMDwithoutNA <- AMD[, .(steps=sum(steps), mean=mean(steps), median=median(steps)), by="date"]     #aggregate by day and Mean and median number of steps taken each day
-AMDwithoutNA <- AMDwithoutNA[!is.na(steps)] #remove NA 
-library(ggplot2)
-ggplot(AMDwithoutNA, aes(x=date, y=steps)) +  geom_col()            #Histogram of the total number of steps taken each day
-AMDwithoutNA
+activitygrouped <- activity[, .(steps = sum(steps, na.rm = T)), by="date"]             #aggregate by day
+activitygrouped[, .(mean=mean(steps, na.rm = T), median=median(steps, na.rm = T))]     #Calculate and report the mean and median total number of steps taken per day
+ggplot(data=activitygrouped, aes(steps)) + geom_histogram(bins=10)                     #Histogram of the total number of steps taken each day
+activity
 ```
+
+
 
 
 
 ### What is the average daily activity pattern?
 ```{r echo=TRUE}
-ggplot(AMDwithoutNA, aes(x=date, y=mean)) +  geom_line()            #Time series plot of the average number of steps taken
-AMDwithoutNA[which.max(mean)] #The 5-minute interval that, on average, contains the maximum number of steps
+steps <- activity[, .(mean = mean(steps, na.rm = T)), by = "interval"]
+ggplot(steps, aes(x=interval, y=mean)) +  geom_line()            #Time series plot of the average number of steps taken
+steps[which.max(mean)]                                    #The 5-minute interval that, on average, contains the maximum number of steps
 ```
+
+
 
 
 
 ### Imputing missing values
-```{r}
-AMD[is.na(steps), .N]# Total Number of rows with missing values
-AMD[, MeanSteps := mean(steps, na.rm = T), by=.(week(date)) # calculate mean of week
-    ][is.na(steps), steps := MeanSteps, by=.(week(date)) # replace missing values with mean 
+```{r echo=TRUE}
+activity[is.na(steps), .N]                                                    # Total Number of rows with missing values
+activity[, MeanSteps := mean(steps, na.rm = T), by=.(data.table::week(date))  # calculate mean of week
+    ][is.na(steps), steps := MeanSteps, by=.(data.table::week(date))          # replace missing values with mean 
       ][, MeanSteps := NULL]
-AMD <- AMD[, .(steps=sum(steps), mean=mean(steps), median=median(steps)), by="date"]     #aggregate by day and Mean and median number of steps taken each day
-ggplot(AMD, aes(x=date, y=steps)) +  geom_col()            #Histogram of the total number of steps taken each day
-AMD
+activity <- activity[, .(steps = sum(steps, na.rm = T)), by="date"]             #aggregate by day
+activity[, .(mean=mean(steps, na.rm = T), median=median(steps, na.rm = T))]     #Calculate and report the mean and median total number of steps taken per day
+ggplot(data=activity, aes(steps)) + geom_histogram(bins=10)                     #Histogram of the total number of steps taken each day
 ```
+
+Imputing increase the mean and median value!
 
 
 
 ### Are there differences in activity patterns between weekdays and weekends?
+```{r echo=TRUE}
+
+```
+
